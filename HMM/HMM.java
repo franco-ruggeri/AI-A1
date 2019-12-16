@@ -12,7 +12,7 @@ public class HMM {
 	private int N, K;
 	
 	/**
-	 * Constructs an HMM with the given model parameters. No checks are done for
+	 * Constructs a HMM with the given model parameters. No checks are done for
 	 * simplicity, but they should be added. The results are unpredictable in case
 	 * of wrong inputs.
 	 * 
@@ -31,8 +31,8 @@ public class HMM {
 	}
 
 	/**
-	 * Computes the observation distribution O2 (t=2, second time step), so using
-	 * the initial state distribution pi.
+	 * Computes the probability distribution for O2 (t=2, second time step), so
+	 * using the initial state distribution pi.
 	 * 
 	 * @return next observation distribution
 	 */
