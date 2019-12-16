@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class HMM1 {
+public class HMM3 {
 
 	public static void main(String[] args) {
 		int N, K, observationSequence[];
@@ -36,8 +36,9 @@ public class HMM1 {
 		for (int t=0; t<observationSequence.length; t++)
 			observationSequence[t] = s.nextInt();
 		
-		// evaluate
-		System.out.println(hmm.evaluate(observationSequence));
+		// learn
+		hmm.learn(observationSequence);
+		System.out.println(hmm);
 		
 		s.close();
 	}

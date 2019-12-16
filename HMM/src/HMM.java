@@ -1,4 +1,3 @@
-import java.util.Scanner;
 
 /**
  * Hidden Markov Model
@@ -13,69 +12,44 @@ public class HMM {
 	private int N, K;
 	
 	/**
-	 * Constructs an HMM reading through a scanner.
-	 */
-	public HMM(Scanner s) {
-		// read A
-		N = s.nextInt(); s.nextInt();	// skip second one (== N)
-		A = new double[N][N];
-		for (int i=0; i<A.length; i++)
-			for (int j=0; j<A[i].length; j++)
-				A[i][j] = s.nextDouble();
-		
-		// read B
-		s.nextInt(); K = s.nextInt(); 	// skip first one (== N)
-		B = new double[N][K];
-		for (int i=0; i<B.length; i++)
-			for (int j=0; j<B[i].length; j++)
-				B[i][j] = s.nextDouble();
-		
-		// read pi
-		s.nextInt(); s.nextInt();		// skip first (== 1) and second (== N)
-		pi = new double[N];
-		for (int i=0; i<pi.length; i++)
-			pi[i] = s.nextDouble();
-	}
-	
-	/**
-	 * Constructs an HMM with the given model parameters.
+	 * Constructs an HMM with the given model parameters. No checks are done for
+	 * simplicity, but they should be added. The results are unpredictable in case
+	 * of wrong inputs.
 	 * 
 	 * @param pi initial state distribution
-	 * @param A transition matrix
-	 * @param B output matrix
+	 * @param A  state transition matrix
+	 * @param B  output matrix
+	 * @param N  number of states
+	 * @param K  number of output symbols
 	 */
-	public HMM(double[] pi, double[][] A, double[][] B) {
+	public HMM(double[] pi, double[][] A, double[][] B, int N, int K) {
+		this.N = N;
+		this.K = K;
 		this.pi = pi;
 		this.A = A;
 		this.B = B;
-		this.N = A.length;
-		this.K = B[0].length;
 	}
-	
+
 	/**
-	 * Computes the next observation distribution given the distribution of the
-	 * current state.
+	 * Computes the observation distribution O2 (t=2, second time step), so using
+	 * the initial state distribution pi.
 	 * 
-	 * @param currentStateDistribution
 	 * @return next observation distribution
 	 */
-	public double[] nextObservationDistribution(double[] currentStateDistribution) {
+	public double[] nextObservationDistribution() {
 		double[] result;
-		result = Matrix.vectorByMatrix(currentStateDistribution, A);
+		result = Matrix.vectorByMatrix(pi, A);
 		result = Matrix.vectorByMatrix(result, B);
 		return result;
 	}
 	
 	/**
-	 * Computes the observation distribution O2 (first time step), so using the
-	 * initial state distribution pi.
+	 * Computes the probability of the observation sequence. Since it computes
+	 * exactly the probability and not the log probability, underflow may occur.
 	 * 
-	 * @return next observation distribution
+	 * @param observationSequence observation sequence
+	 * @return probability of observation sequence
 	 */
-	public double[] nextObservationDistribution() {
-		return nextObservationDistribution(pi);
-	}
-	
 	public double evaluate(int[] observationSequence) {
 		double result, alpha[][], c[];
 		int T = observationSequence.length;
@@ -93,6 +67,35 @@ public class HMM {
 		return result;
 	}
 	
+	/**
+	 * Finds the most likely state sequence given the observations.
+	 * 
+	 * @param observationSequence observation sequence
+	 * @return state sequence
+	 */
+	public int[] decode(int[] observationSequence) {
+		int T = observationSequence.length;
+		int[] stateSequence = new int[T];
+		viterbi(observationSequence, stateSequence);
+		return stateSequence;
+	}
+	
+	/**
+	 * Estimates the model parameters from the observation sequence.
+	 * 
+	 * @param observationSequence observation sequence
+	 */
+	public void learn(int[] observationSequence) {
+		baumWelch(observationSequence, 1000);
+	}
+	
+	/**
+	 * Forward algorithm (a.k.a. alpha-pass).
+	 * 
+	 * @param O observation sequence
+	 * @param alpha preallocated matrix filled by the method
+	 * @param c preallocated array filled by the method
+	 */
 	private void forward(int[] O, double[][] alpha, double[] c) {
 		int T = O.length;
 		
@@ -127,14 +130,167 @@ public class HMM {
 		}
 	}
 	
+	/**
+	 * Viterbi algorithm.
+	 * 
+	 * @param O observation sequence
+	 * @param stateSequence preallocated array filled by the method
+	 * @return log probability of the most likely state sequence
+	 */
+	private double viterbi(int[] O, int[] stateSequence) {
+		int T = O.length;
+		double[][] delta = new double[T][N];
+		int[][] deltaIdx = new int[T][N];
+		double logProb = -Double.MAX_VALUE;
+		
+		// compute delta_0
+		for (int i = 0; i < N; i++)
+			delta[0][i] = Math.log(pi[i] * B[i][O[0]]);
+
+		// compute delta_t, 0<t<T 
+		for (int t = 1; t < T; t++) {
+			for (int i = 0; i < N; i++) {
+				// initialize using state 0
+				delta[t][i] = delta[t - 1][0] + Math.log(A[0][i]) + Math.log(B[i][O[t]]);
+				deltaIdx[t][i] = 0;
+
+				// search max
+				for (int j = 1; j < N; j++) {
+					double tmp = delta[t - 1][j] + Math.log(A[j][i]) + Math.log(B[i][O[t]]);
+					if (tmp > delta[t][i]) {
+						delta[t][i] = tmp;
+						deltaIdx[t][i] = j;
+					}
+				}
+			}
+		}
+
+		// search last state
+		stateSequence[T-1] = 0; // initialize to state 0
+		for (int i = 1; i < N; i++) // search max delta
+			if (delta[T-1][i] > delta[T-1][stateSequence[T-1]])
+				stateSequence[T - 1] = i;
+
+		// backtrack
+		for (int t = T - 2; t >= 0; t--)
+			stateSequence[t] = deltaIdx[t+1][stateSequence[t+1]];
+		
+		// compute log probability
+		for (int i=0; i<N; i++)
+			if (delta[T-1][i] > logProb)
+				logProb = delta[T-1][i];
+		return logProb;
+	}
+	
+	/**
+	 * Backward algorithm (a.k.a. beta-pass).
+	 * 
+	 * @param O observation sequence
+	 * @param beta preallocated matrix filled by the method
+	 * @param c scaling factors found with forward algorithm
+	 */
+	private void backward(int[] O, double[][] beta, double[] c) {
+		int T = O.length;
+		
+		// compute beta_T-1 scaled by c_T-1
+		for (int i=0; i<N; i++)
+			beta[T-1][i] = c[T-1];
+		
+		// compute beta_t scaled by c_t, 0<=t<T-1
+		for (int t=T-2; t>=0; t--) {
+			for (int i=0; i<N; i++) {
+				beta[t][i] = 0;
+				for (int j=0; j<N; j++)
+					beta[t][i] += A[i][j] * B[j][O[t+1]] * beta[t+1][j];
+				beta[t][i] *= c[t];
+			}
+		}
+	}
+	
+	/**
+	 * Baum-Welch algorithm.
+	 * 
+	 * @param O observation sequence
+	 * @param maxIters maximum number of iterations
+	 */
+	private void baumWelch(int[] O, int maxIters) {
+		int T = O.length, iters = 0;
+		double[] c = new double[T];
+		double[][] alpha = new double[T][N];
+		double[][] beta = new double[T][N];
+		double[][] gamma = new double[T][N];
+		double[][][] digamma = new double[T][N][N];
+		double numer, denom, logProb = -Double.MAX_VALUE, oldLogProb;
+
+		do {
+			oldLogProb = logProb;
+
+			// alpha-pass
+			forward(O, alpha, c);
+
+			// beta-pass
+			backward(O, beta, c);
+
+			// compute di-gamma and gamma
+			for (int t = 0; t < T - 1; t++) {
+				for (int i = 0; i < N; i++) {
+					gamma[t][i] = 0;
+					for (int j = 0; j < N; j++) {
+						digamma[t][i][j] = alpha[t][i] * A[i][j] * B[j][O[t + 1]] * beta[t + 1][j];
+						gamma[t][i] += digamma[t][i][j];
+					}
+				}
+			}
+			// special case for gammaT-1(i)
+			for (int i = 0; i < N; i++)
+				gamma[T - 1][i] = alpha[T - 1][i];
+
+			// re-estimate pi
+			for (int i = 0; i < N; i++)
+				pi[i] = gamma[0][i];
+			
+			// re-estimate A
+			for (int i = 0; i < N; i++) {
+				denom = 0.0;
+				for (int t = 0; t < T - 1; t++)
+					denom += gamma[t][i];
+				for (int j = 0; j < N; j++) {
+					numer = 0.0;
+					for (int t = 0; t < T - 1; t++)
+						numer += digamma[t][i][j];
+					A[i][j] = numer / denom;
+				}
+			}
+			
+			// re-estimate B
+			for (int i = 0; i < N; i++) {
+				denom = 0.0;
+				for (int t = 0; t < T; t++)
+					denom += gamma[t][i];
+				for (int j = 0; j < K; j++) {
+					numer = 0.0;
+					for (int t = 0; t < T; t++)
+						if (O[t] == j)
+							numer += gamma[t][i];
+					B[i][j] = numer / denom;
+				}
+			}
+
+			// repeat?
+			logProb = 0.0;
+			for (int i = 0; i < T; i++)
+				logProb += Math.log(c[i]);
+			logProb = -logProb;
+			iters++;
+		} while (iters < maxIters && logProb > oldLogProb);
+	}
+	
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(Matrix.matrixToString(A));
 		sb.append("\n");
 		sb.append(Matrix.matrixToString(B));
-		sb.append("\n");
-		sb.append(Matrix.vectorToString(pi));
 		return sb.toString();
 	}
 	
