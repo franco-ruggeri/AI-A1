@@ -6,7 +6,7 @@ class Player {
 
 	private static final Action cDontShoot = new Action(-1, -1);
 	private static final int COUNT_PATTERN = 2;
-	private static final double MIN_CONFIDENCE_SHOT = 0.82;
+	private static final double MIN_CONFIDENCE_SHOT = 0.75;
 	private static final int MAX_ITERS_SHOT = 1000;
 	private static final int MAX_ITERS_GUESS = 1000;
 	private static final int TURNS_PER_ROUND = 100;
