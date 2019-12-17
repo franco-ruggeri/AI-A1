@@ -64,6 +64,9 @@ public class HMM {
 	 * Computes the probability distribution for the next observation OT+1, given an
 	 * observation sequence O1:T (i.e. P(OT+1|O1:T)).
 	 * 
+	 * N.B. It would be possible to work with log-probability, but in this case is
+	 * not necessary.
+	 * 
 	 * @return next observation distribution
 	 */
 	public double[] nextObservationDistribution(int[] observationSequence) {
