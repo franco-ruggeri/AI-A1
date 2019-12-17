@@ -3,11 +3,77 @@
 \title{A1 - HMM}
 \subtitle{Artificial Intelligence}
 \author{Franco Ruggeri}
+\setlength{\parindent}{0pt}
+
+\usepackage{amsmath}
 
 \begin{document}
 \maketitle
- 
 
+\section{Grade E-D}
+
+\subsection{Question 1}
+
+\begin{equation}
+ A = 
+ \begin{bmatrix}
+  0.5 & 0.5 \\
+  0.5 & 0.5
+ \end{bmatrix} 
+ ,\ \ B = 
+ \begin{bmatrix}
+  0.1 & 0.9 \\
+  0.5 & 0.5
+ \end{bmatrix} 
+ ,\ \ \pi = 
+ \begin{bmatrix}
+  0.5 & 0.5
+ \end{bmatrix} 
+\end{equation}
+
+\subsection{Question 2}
+
+\begin{equation}
+ P(X_6)\ A = P(X_7)
+\end{equation}
  
- 
+\subsection{Question 3}
+
+\begin{equation}
+ P(X_7)\ B = P(O_7)
+\end{equation}
+
+\subsection{Question 4}
+
+\begin{align}
+ P(O_{1:t}=o_{1:t}, X_t=x_i) &= P(O_t=o_t, O_{1:t-1}=o_{1:t-1}, X_t=x_i) \nonumber \\
+ &= \{product\ rule\} \nonumber \\
+ &= P(O_t=o_t | X_t=x_i, O_{1:t-1}=o_{1:t-1})\ P(X_t=x_i, O_{1:t-1}=o_{1:t-1}) \nonumber \\
+ &= \{conditional\ independence\} \nonumber \\
+ &= P(O_t=o_t | X_t=x_i)\ P(X_t=x_i, O_{1:t-1}=o_{1:t-1})
+\end{align}
+
+\subsection{Question 5}
+
+\begin{itemize}
+ \item $\delta$ has $TxN$ elements
+ \item $\delta^idx$ has $(T-1)xN$ elements (no predecessor for $t=0$)
+\end{itemize}
+
+\subsection{Question 6}
+
+\begin{align} \label{eq:q6}
+ P(X_t=x_i, X_{t+1}=x_j | O_{1:T}=o_{1:T}) &= \{definition\ of\ conditional\ probability\} \nonumber \\
+ &= \frac{P(X_t=x_i, X_{t+1}=x_j, O_{1:T}=o_{1:T})}{P(O_{1:T}=o_{1:T})}
+\end{align}
+The denominator of (\ref{eq:q6}) can be computed using the forward algorithm as $\sum_{k=1}^N \alpha_T(k)$. This term represents a normalization factor.
+
+
+\section{Grade C}
+
+\subsection{Question 7}
+
+
+
 \end{document}
+
