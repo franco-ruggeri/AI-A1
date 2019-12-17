@@ -29,6 +29,23 @@ public class HMM {
 		this.A = A;
 		this.B = B;
 	}
+	
+	/**
+	 * Constructs a HMM with good initialization to learn well.
+	 * 
+	 * @param N number of states
+	 * @param K number of output symbols
+	 */
+	public HMM(int N, int K) {
+		this.N = N;
+		this.K = K;
+		A = Matrix.randomRowStochastic(N, N);
+		B = Matrix.randomRowStochastic(N, K);
+		pi = new double[N];
+		double[][] tmp = Matrix.randomRowStochastic(1, N);
+		for (int i=0; i<N; i++)
+			this.pi[i] = tmp[0][i];
+	}
 
 	/**
 	 * Computes the probability distribution for O2 (t=2, second time step), so
@@ -44,11 +61,41 @@ public class HMM {
 	}
 	
 	/**
-	 * Computes the probability of the observation sequence. Since it computes
-	 * exactly the probability and not the log probability, underflow may occur.
+	 * Computes the probability distribution for the next observation OT+1, given an
+	 * observation sequence O1:T (i.e. P(OT+1|O1:T)).
+	 * 
+	 * @return next observation distribution
+	 */
+	public double[] nextObservationDistribution(int[] observationSequence) {
+		double[] result = new double[K];
+		int T = observationSequence.length;
+		
+		// TODO: write derivation in report
+		
+		// forward algorithm
+		double[][] alpha = new double[T][N];
+		double[] c = new double[T];
+		forward(observationSequence, alpha, c);
+		
+		// compute result
+		for (int k=0; k<K; k++) {
+			result[k] = 0;
+			for (int i=0; i<N; i++) {
+				double tmp = 0;
+				for (int j=0; j<N; j++)
+					tmp += A[j][i] * alpha[T-1][j];
+				tmp *= B[i][k];
+				result[k] += tmp;
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Computes the log-probability of the observation sequence.
 	 * 
 	 * @param observationSequence observation sequence
-	 * @return probability of observation sequence
+	 * @return log-probability of observation sequence
 	 */
 	public double evaluate(int[] observationSequence) {
 		double result, alpha[][], c[];
@@ -60,11 +107,11 @@ public class HMM {
 		forward(observationSequence, alpha, c);
 		
 		// compute result
-		result = c[0];
-		for (int t=1; t<T; t++)
-			result *= c[t];
-		result = 1 / result;
-		return result;
+		result = 0;
+		for (int t=0; t<T; t++)
+			result += Math.log(c[t]);
+		result = -result;
+		return Double.isFinite(result) ? result : Double.NEGATIVE_INFINITY;
 	}
 	
 	/**
@@ -84,9 +131,10 @@ public class HMM {
 	 * Estimates the model parameters from the observation sequence.
 	 * 
 	 * @param observationSequence observation sequence
+	 * @param maxIters maximum number of iterations
 	 */
-	public void learn(int[] observationSequence) {
-		baumWelch(observationSequence, 1000);
+	public void learn(int[] observationSequence, int maxIters) {
+		baumWelch(observationSequence, maxIters);
 	}
 	
 	/**
@@ -107,7 +155,8 @@ public class HMM {
 		}
 		
 		// scale alpha_0
-		c[0] = 1/c[0];
+		if (c[0] != 0)
+			c[0] = 1/c[0];
 		for (int i=0; i<N; i++)
 			alpha[0][i] *= c[0];
 		
@@ -124,7 +173,8 @@ public class HMM {
 			}
 			
 			// scale alpha_t
-			c[t] = 1/c[t];
+			if (c[t] != 0)
+				c[t] = 1/c[t];
 			for (int i=0; i<N; i++)
 				alpha[t][i] *= c[t];
 		}
@@ -283,6 +333,8 @@ public class HMM {
 			logProb = -logProb;
 			iters++;
 		} while (iters < maxIters && logProb > oldLogProb);
+		
+//		System.err.println(logProb);
 	}
 	
 	@Override
