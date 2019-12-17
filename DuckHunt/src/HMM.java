@@ -69,9 +69,7 @@ public class HMM {
 	public double[] nextObservationDistribution(int[] observationSequence) {
 		double[] result = new double[K];
 		int T = observationSequence.length;
-		
-		// TODO: write derivation in report
-		
+
 		// forward algorithm
 		double[][] alpha = new double[T][N];
 		double[] c = new double[T];
@@ -333,8 +331,6 @@ public class HMM {
 			logProb = -logProb;
 			iters++;
 		} while (iters < maxIters && logProb > oldLogProb);
-		
-//		System.err.println(logProb);
 	}
 	
 	@Override
