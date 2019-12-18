@@ -2,6 +2,13 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Possible improvement: 1 HMM for species (instead of for each bird)
+ * This requires learning with multiple observation sequences, see tutorial by Rabiner.
+ * 
+ * @author fruggeri
+ */
+
 class Player {
 
 	private static final Action cDontShoot = new Action(-1, -1);

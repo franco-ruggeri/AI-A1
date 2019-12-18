@@ -31,7 +31,8 @@ public class HMM {
 	}
 	
 	/**
-	 * Constructs a HMM with good initialization to learn well.
+	 * Constructs a HMM with stochastic matrices (values almost, but not exactly,
+	 * uniform).
 	 * 
 	 * @param N number of states
 	 * @param K number of output symbols
