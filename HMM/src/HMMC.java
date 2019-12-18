@@ -35,10 +35,10 @@ public class HMMC {
 //		HMM hmm = new HMM(pi, A, B, 3, 4);
 		
 		// Q8
-		HMM hmm = new HMM(3, 4);
+//		HMM hmm = new HMM(3, 4);
 		
 		// Q9
-//		HMM hmm = new HMM(5, 4);
+		HMM hmm = new HMM(6, 4);
 		
 		// Q10.1
 //		double[][] A = {
@@ -81,12 +81,12 @@ public class HMMC {
 //		};
 //		double[] pi = {0.95, 0.05, 0};
 //		HMM hmm = new HMM(pi, A, B, 3, 4);
-		System.err.println(hmm);
+//		System.err.println(hmm);
 		
 		// observations
 		int[] O;
-//		try (Scanner s = new Scanner(new File("hmm_c_N1000.in"))) {
-		try (Scanner s = new Scanner(new File("hmm_c_N10000.in"))) {
+		try (Scanner s = new Scanner(new File("hmm_c_N1000.in"))) {
+//		try (Scanner s = new Scanner(new File("hmm_c_N10000.in"))) {
 			int T = s.nextInt();
 			O = new int[T];
 			for (int t=0; t<T; t++)

@@ -3,10 +3,12 @@
 \title{A1 - HMM}
 \subtitle{Artificial Intelligence}
 \author{Franco Ruggeri}
+\date{December 18, 2019}
 \setlength{\parindent}{0pt}
 
 \usepackage{amsmath}
 \usepackage[backend=biber]{biblatex}
+\usepackage{color,soul}
 
 \bibliography{bibliography.bib}
 
@@ -150,28 +152,49 @@ We can notice that the states 2 and 3 are swapped (i.e. $X_2$ of the learned mod
 
 \subsection{Question 9}
 
-More hidden states require more observations, as the Baum-Welch algorithm is based on statistics on how frequent transitions/emissions are and more parameters require more data to have significant statistics. \\
 
-5 states:
-\begin{equation}
-  \mathbf{A} = 
- \begin{bmatrix}
-  0.47 & 0.22 & 0.31 & 0 & 0 \\
-  0 & 0.46 & 0 & 0.37 & 0.17 \\
-  0 & 0.17 & 0.45 & 0.16 & 0.21 \\
-  0.32 & 0 & 0.01 & 0.66 & 0 \\
-  0 & 0 & 0.29 & 0 & 0.7
- \end{bmatrix} 
- ,\ \ \mathbf{B} = 
- \begin{bmatrix}
-  0.43 & 0.57 & 0 & 0 \\
-  0 & 0.4 & 0.6 & 0 \\
-  0 & 0 & 0.32 & 0.68 \\
-  0 & 0.24 & 0.28 & 0.48 \\
-  0.75 & 0.19 & 0.06 & 0
- \end{bmatrix} 
- ,\ \ D(\lambda_1, \lambda_2) \approx 0.016819
-\end{equation}
+
+\begin{center}
+ \begin{tabular}{||c c c||} 
+ \hline
+ T & N & $|D(\lambda_1, \lambda_2)|$ \\ [0.5ex] 
+ \hline\hline
+ 10000 & 5 & 0.0014 \\ 
+ \hline
+ 10000 & 4 & 0.0012 \\
+ \hline
+ \hl{10000} & \hl{3} & \hl{0.0008} \\
+ \hline
+ 10000 & 2 & 0.0044 \\
+ \hline
+ 10000 & 1 & 0.03949 \\
+ \hline
+ \hline
+ 1000 & 5 & 0.0135 \\ 
+ \hline
+ 1000 & 4 & 0.0111 \\
+ \hline
+ 1000 & 3 & 0.0059 \\
+ \hline
+ \hl{1000} & \hl{2} & \hl{0.0032} \\
+ \hline
+ 1000 & 1 & 0.0418 \\
+ \hline
+ \hline
+ 10 & 5 & 0.9030 \\ 
+ \hline
+ 10 & 4 & 0.6629 \\
+ \hline
+ 10 & 3 & 0.5072 \\
+ \hline
+ 10 & 2 & 0.1470 \\
+ \hline
+ \hl{10} & \hl{1} & \hl{0.0391} \\ [1ex] 
+ \hline
+\end{tabular}
+\end{center}
+
+As we can see, if enough data are available, the best number of hidden states is of course 3 (same as generating model). However, in case of few data, this is not true: with 1000 and 100 observations the best number of hidden states is 2 and 1, respectively. This confirms that more hidden states ($\rightarrow$ more parameters) require more data, as the Baum-Welch algorithm is based on statistics and there has to be enough data for those to be significant.
 
 \subsection{Question 10}
 
@@ -207,6 +230,7 @@ Initializing with a diagonal $\mathbf{A}$ matrix and $\pi = \left[0,0,1\right]$,
   NaN & NaN & NaN & NaN \\
  \end{bmatrix}
 \end{equation}
+The $NaN$s (not a number) come from divisions 0/0. Indeed, the model is stuck into the state 3 ($i=2$) and so $\gamma_t(i,j)=0$ and $\gamma_t(i)=0$ for $i\neq2$.
 
 Finally, initializing the matrices close to the solution guarantees a good convergence, since the global maximum is reached.
 
@@ -235,7 +259,7 @@ So the complete formula is:
  next\ move = \argmax_{m} \sum_{i=1}^N b_i(O_{T+1})\ \sum_{j=1}^N a_{ji}\ \hat{\alpha}_T(j)
 \end{equation}
 
-The idea is to use not only the model of the current bird, but also the models of all the birds belonging to the guessed species, which would have to behave like the current bird. So, I pick the most likely next move overall. \\
+The idea is to use not only the model of the current bird, but also the models of all the birds belonging to the guessed species, which would have to behave like the current one. So, I pick the most likely next move overall. \\
 
 Improvements:
 \begin{itemize}
