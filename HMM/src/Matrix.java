@@ -35,4 +35,23 @@ public abstract class Matrix {
 				sb.append(String.format("%.2f", m[i][j])).append(" ");
 		return sb.toString();
 	}
+	
+	public static double[][] randomRowStochastic(int N, int K) {
+		double[][] m = new double[N][K];
+		
+		for (int i=0; i<N; i++) {
+			double sum=0.0;
+		
+			// generate random values
+			for (int j=0; j<K; j++) {
+				m[i][j] = Math.random() + 10;	// shift because we have to work with probabilities (>0)
+				sum += m[i][j];
+			}
+			
+			// make row stochastic
+			for (int j=0; j<K; j++)
+				m[i][j] /= sum;
+		}
+		return m;
+	}
 }

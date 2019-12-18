@@ -44,7 +44,7 @@ public abstract class Matrix {
 		
 			// generate random values
 			for (int j=0; j<K; j++) {
-				m[i][j] = Math.random() + 9.5;	// shift to work with numbers > 1
+				m[i][j] = Math.random() + 10;	// shift because we have to work with probabilities (>0)
 				sum += m[i][j];
 			}
 			

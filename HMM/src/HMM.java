@@ -29,6 +29,23 @@ public class HMM {
 		this.A = A;
 		this.B = B;
 	}
+	
+	/**
+	 * Constructs a HMM with good initialization to learn well.
+	 * 
+	 * @param N number of states
+	 * @param K number of output symbols
+	 */
+	public HMM(int N, int K) {
+		this.N = N;
+		this.K = K;
+		A = Matrix.randomRowStochastic(N, N);
+		B = Matrix.randomRowStochastic(N, K);
+		pi = new double[N];
+		double[][] tmp = Matrix.randomRowStochastic(1, N);
+		for (int i=0; i<N; i++)
+			this.pi[i] = tmp[0][i];
+	}
 
 	/**
 	 * Computes the probability distribution for O2 (t=2, second time step), so
@@ -65,6 +82,29 @@ public class HMM {
 			result *= c[t];
 		result = 1 / result;
 		return result;
+	}
+	
+	/**
+	 * Computes the log-probability of the observation sequence.
+	 * 
+	 * @param observationSequence observation sequence
+	 * @return log-probability of observation sequence
+	 */
+	public double evaluateLog(int[] observationSequence) {
+		double result, alpha[][], c[];
+		int T = observationSequence.length;
+		
+		// forward algorithm
+		alpha = new double[T][N];
+		c = new double[T];
+		forward(observationSequence, alpha, c);
+		
+		// compute result
+		result = 0;
+		for (int t=0; t<T; t++)
+			result += Math.log(c[t]);
+		result = -result;
+		return Double.isFinite(result) ? result : Double.NEGATIVE_INFINITY;
 	}
 	
 	/**
